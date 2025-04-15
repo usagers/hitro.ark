@@ -11,12 +11,12 @@ import { toInteger } from './-Number'
 import { isWeakMap } from './-WeakMap'
 import { isNullable } from './~Nullable'
 
-export type DeepType = boolean | number
-export type FilterTypes = Array<string | number | RegExp>
-export interface EqualOptionsType { strict?: FilterTypes; include?: FilterTypes; exclude?: FilterTypes; deep?: DeepType; }
-export interface CloneOptionsType { omit?: FilterTypes; pick?: FilterTypes; cache?: WeakMap<object, Object | undefined | null>; deep?: DeepType; }
+export type IDeep = boolean | number
+export type IFilter = Array<string | number | RegExp>
+export interface IEqualOptions { strict?: IFilter; include?: IFilter; exclude?: IFilter; deep?: IDeep; }
+export interface ICloneOptions { omit?: IFilter; pick?: IFilter; cache?: WeakMap<object, Object | undefined | null>; deep?: IDeep; }
 
-export const equal = (one: Object | undefined | null, two: Object | undefined | null, opts: EqualOptionsType | DeepType = true): boolean => {
+export const equal = (one: Object | undefined | null, two: Object | undefined | null, opts: IEqualOptions | IDeep = true): boolean => {
   if (one === two) {
     return true
   }
@@ -41,12 +41,12 @@ export const equal = (one: Object | undefined | null, two: Object | undefined | 
     return Math.abs(one as number - (two as number)) < Number.EPSILON
   }
 
-  const cfg = opts as EqualOptionsType
-  const deep = isObject(opts) ? (opts as EqualOptionsType).deep : opts as DeepType
+  const cfg = opts as IEqualOptions
+  const deep = isObject(opts) ? (opts as IEqualOptions).deep : opts as IDeep
   const level = isNullable(deep) || deep === true || deep === Infinity ? Infinity : toInteger(deep)
-  const include = isObject(cfg) && isArray(cfg.include) ? (cfg.include as FilterTypes).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : [/(?:)/]
-  const exclude = isObject(cfg) && isArray(cfg.exclude) ? (cfg.exclude as FilterTypes).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : []
-  const strict = isObject(cfg) && isArray(cfg.strict) ? (cfg.strict as FilterTypes).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : []
+  const include = isObject(cfg) && isArray(cfg.include) ? (cfg.include as IFilter).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : [/(?:)/]
+  const exclude = isObject(cfg) && isArray(cfg.exclude) ? (cfg.exclude as IFilter).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : []
+  const strict = isObject(cfg) && isArray(cfg.strict) ? (cfg.strict as IFilter).filter(key => isRegExp(key) || isFinite(key) || isString(key)) : []
 
   if (!isNumber(level) || level < 1) {
     return false
@@ -272,14 +272,14 @@ export const merge = <T = Object | undefined | null>(val: T, ...rest: Array<Obje
   return val
 }
 
-export const clone = <T = Object | undefined | null>(val: T, opts: CloneOptionsType | DeepType = true): T => {
-  const cfg = opts as CloneOptionsType
+export const clone = <T = Object | undefined | null>(val: T, opts: ICloneOptions | IDeep = true): T => {
+  const cfg = opts as ICloneOptions
   const deep = isObject(opts) ? cfg.deep : opts
   const cache = (isObject(opts) && isWeakMap(cfg.cache) ? cfg.cache : new WeakMap()) as WeakMap<Object, Object>
   const level = isNullable(deep) || deep === true || deep === Infinity ? Infinity : Math.max(toInteger(deep), 1)
 
-  const omit = isObject(cfg) && isArray(cfg.omit) ? (cfg.omit as FilterTypes).filter(key => isRegExp(key) || isString(key) || isFinite(key)) : []
-  const pick = isObject(cfg) && isArray(cfg.pick) ? (cfg.pick as FilterTypes).filter(key => isRegExp(key) || isString(key) || isFinite(key)) : []
+  const omit = isObject(cfg) && isArray(cfg.omit) ? (cfg.omit as IFilter).filter(key => isRegExp(key) || isString(key) || isFinite(key)) : []
+  const pick = isObject(cfg) && isArray(cfg.pick) ? (cfg.pick as IFilter).filter(key => isRegExp(key) || isString(key) || isFinite(key)) : []
 
   const cloning = (val: T, level: number): T => {
     const value: ESObject = isArray(val as Object) ? [] : {}

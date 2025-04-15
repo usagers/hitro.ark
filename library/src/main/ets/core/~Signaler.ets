@@ -12,7 +12,7 @@ let globalVersion: number = 0
 let globalEffect: Effect | undefined = undefined
 let evalContext: Computed | Effect | undefined = undefined
 
-interface ReadonlySignal<T = Object | undefined | null> {
+interface IReadonlySignal<T = Object | undefined | null> {
   readonly value: T;
   subscribe(fn: (value: T) => void): () => void;
   toString(): string;
@@ -21,18 +21,18 @@ interface ReadonlySignal<T = Object | undefined | null> {
   peek(): T;
 }
 
-interface Node<T = Object | undefined | null> {
+interface INode<T = Object | undefined | null> {
   signal: Signal<T>;
   target: Computed | Effect;
-  rollbackNode?: Node;
-  prevSource?: Node;
-  nextSource?: Node;
-  prevTarget?: Node;
-  nextTarget?: Node;
+  rollbackNode?: INode;
+  prevSource?: INode;
+  nextSource?: INode;
+  prevTarget?: INode;
+  nextTarget?: INode;
   version: number;
 }
 
-type EffectFn = () => void | (() => void)
+type IEffectFn = () => void | (() => void)
 
 class Util {
   static isNeedRecompute(target: Computed | Effect) {
@@ -62,7 +62,7 @@ class Util {
 
   static cleanSources(target: Computed | Effect) {
     let node = target.source
-    let head: Node | undefined = undefined
+    let head: INode | undefined = undefined
 
     while (node !== undefined) {
       const prev = node.prevSource
@@ -142,13 +142,13 @@ class Util {
 }
 
 class Effect {
-  fn?: EffectFn
+  fn?: IEffectFn
   nextEffect?: Effect | undefined
   cleanup?: () => void = undefined
-  source?: Node = undefined
+  source?: INode = undefined
   flags: number = TRACKING
 
-  constructor(fn: EffectFn) {
+  constructor(fn: IEffectFn) {
     this.fn = fn
   }
 
@@ -262,8 +262,8 @@ class Effect {
 class Signal<T = Object | undefined | null> {
   val?: T
   err?: Object | undefined | null
-  node?: Node = undefined
-  target?: Node = undefined
+  node?: INode = undefined
+  target?: INode = undefined
   version: number = 0
 
   get value(): T {
@@ -306,7 +306,7 @@ class Signal<T = Object | undefined | null> {
     this.val = val
   }
 
-  addNode(node: Node) {
+  addNode(node: INode) {
     if (this.target !== node && node.prevTarget === undefined) {
       node.nextTarget = this.target
 
@@ -318,7 +318,7 @@ class Signal<T = Object | undefined | null> {
     }
   }
 
-  delNode(node: Node) {
+  delNode(node: INode) {
     if (this.target !== undefined) {
       const prev = node.prevTarget
       const next = node.nextTarget
@@ -354,12 +354,12 @@ class Signal<T = Object | undefined | null> {
     return result
   }
 
-  dependency(): Node | undefined {
+  dependency(): INode | undefined {
     if (evalContext === undefined) {
       return undefined
     }
 
-    let node: Node | undefined = this.node
+    let node: INode | undefined = this.node
 
     if (node === undefined || node.target !== evalContext) {
       node = {
@@ -440,7 +440,7 @@ class Signal<T = Object | undefined | null> {
 
 class Computed<T = Object | undefined | null> extends Signal<T> {
   globalVersion: number = globalVersion - 1
-  source?: Node = undefined
+  source?: INode = undefined
   flags: number = OUTDATED
   fn: () => T
 
@@ -469,7 +469,7 @@ class Computed<T = Object | undefined | null> extends Signal<T> {
     this.fn = fn
   }
 
-  addNode(node: Node) {
+  addNode(node: INode) {
     if (this.target === undefined) {
       this.flags |= OUTDATED | TRACKING
 
@@ -481,7 +481,7 @@ class Computed<T = Object | undefined | null> extends Signal<T> {
     super.addNode(node)
   }
 
-  delNode(node: Node) {
+  delNode(node: INode) {
     if (this.target !== undefined) {
       super.delNode(node)
 
@@ -574,10 +574,10 @@ const untracked = <T = void>(fn: () => T) => {
 }
 
 const computed = <T = void>(fn: () => T) => {
-  return new Computed(fn) as ReadonlySignal<T>
+  return new Computed(fn) as IReadonlySignal<T>
 }
 
-const effect = <T = void>(fn: EffectFn) => {
+const effect = <T = void>(fn: IEffectFn) => {
   const effect = new Effect(fn)
 
   try {
@@ -609,8 +609,8 @@ const signal = <T>(val?: T) => {
 }
 
 export {
-  EffectFn,
-  ReadonlySignal,
+  IEffectFn,
+  IReadonlySignal,
   untracked,
   computed,
   effect,

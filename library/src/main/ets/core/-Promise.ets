@@ -1,4 +1,4 @@
-export interface ReturnPromise<T = Object | undefined | null> extends Promise<T> {
+export interface IPromiser<T = Object | undefined | null> extends Promise<T> {
   reject: (reason?: Object | undefined | null) => void
   resolve: (value: T | PromiseLike<T>) => void
   promise: Promise<T>;
@@ -30,7 +30,7 @@ export const toPromise = <T = Object | undefined | null>(...rest: Array<Object |
       return Promise.reject(reason)
     })
 
-    return promise as ReturnPromise<T>
+    return promise as IPromiser<T>
   }
 
   const promise = new Promise<T>((r1, r2) => {

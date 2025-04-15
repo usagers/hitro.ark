@@ -4,7 +4,7 @@ import { isObject } from './-Object'
 import { isFunction } from './-Function'
 import { isNullable } from './~Nullable'
 
-export const debounce = (func: Function, wait: number, options: DebounceOptions = {}) => {
+export const debounce = (func: Function, wait: number, options: IDebounceOptions = {}) => {
   let result: Object | undefined | null
   let timerId: Object | undefined | null
   let lastArgs: Object | undefined | null
@@ -133,7 +133,7 @@ export const debounce = (func: Function, wait: number, options: DebounceOptions 
   return debounced
 }
 
-export const throttle = (func: Function, wait: number, options: ThrottleOptions = {}) => {
+export const throttle = (func: Function, wait: number, options: IThrottleOptions = {}) => {
   const leading = !isObject(options) || options.leading !== false
   const trailing = !isObject(options) || options.trailing !== false
 
@@ -150,9 +150,9 @@ export const throttle = (func: Function, wait: number, options: ThrottleOptions 
   return throttled
 }
 
-export interface ThrottleOptions extends Omit<DebounceOptions, 'maxWait'> {}
+export interface IThrottleOptions extends Omit<IDebounceOptions, 'maxWait'> {}
 
-export interface DebounceOptions {
+export interface IDebounceOptions {
   trailing?: boolean;
   leading?: boolean;
   maxWait?: number;
